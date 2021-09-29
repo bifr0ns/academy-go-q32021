@@ -8,10 +8,10 @@ import (
 	"strconv"
 
 	"github.com/bifr0ns/academy-go-q32021/common"
-	"github.com/bifr0ns/academy-go-q32021/repositories"
+	"github.com/bifr0ns/academy-go-q32021/model"
 )
 
-func GetPokemonInfo(pokemonId string) (*repositories.Pokemon, int, error) {
+func GetPokemonInfo(pokemonId string) (*model.Pokemon, int, error) {
 
 	csvFile, err := os.Open(common.CsvPokemonName)
 	if err != nil {
@@ -36,7 +36,7 @@ func GetPokemonInfo(pokemonId string) (*repositories.Pokemon, int, error) {
 		speed, _ := strconv.Atoi(line[10])
 		generation, _ := strconv.Atoi(line[11])
 
-		pokemon := repositories.Pokemon{
+		pokemon := model.Pokemon{
 			Id:           id,
 			Name:         line[1],
 			Type1:        line[2],

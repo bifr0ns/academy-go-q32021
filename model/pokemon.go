@@ -1,4 +1,4 @@
-package repositories
+package model
 
 type Pokemon struct {
 	Id           int    `json:"id"`
