@@ -7,12 +7,13 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/bifr0ns/academy-go-q32021/common"
 	"github.com/bifr0ns/academy-go-q32021/repositories"
 )
 
 func GetPokemonInfo(pokemonId string) (*repositories.Pokemon, int, error) {
 
-	csvFile, err := os.Open("pokemon.csv")
+	csvFile, err := os.Open(common.CsvPokemonName)
 	if err != nil {
 		return nil, 500, err
 	}

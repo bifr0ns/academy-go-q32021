@@ -1,11 +1,12 @@
 package routes
 
 import (
-	"github.com/gorilla/mux"
 	"net/http"
 
 	"github.com/bifr0ns/academy-go-q32021/common"
 	"github.com/bifr0ns/academy-go-q32021/controllers"
+
+	"github.com/gorilla/mux"
 )
 
 func Setup(router *mux.Router) {

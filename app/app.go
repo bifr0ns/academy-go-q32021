@@ -1,10 +1,13 @@
 package app
 
 import (
-	"github.com/bifr0ns/academy-go-q32021/routes"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+
+	"github.com/bifr0ns/academy-go-q32021/common"
+	"github.com/bifr0ns/academy-go-q32021/routes"
+
+	"github.com/gorilla/mux"
 )
 
 func Start() {
@@ -13,5 +16,5 @@ func Start() {
 
 	routes.Setup(router)
 
-	log.Fatal(http.ListenAndServe("localhost:8000", router))
+	log.Fatal(http.ListenAndServe(common.LocalHost+":"+common.LocalPort, router))
 }
