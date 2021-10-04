@@ -1,4 +1,4 @@
-package services
+package repository
 
 import (
 	"encoding/csv"
@@ -11,18 +11,28 @@ import (
 	"github.com/bifr0ns/academy-go-q32021/model"
 )
 
-func GetPokemonInfo(pokemonId string) (*model.Pokemon, int, error) {
+type PokemonRepository interface {
+	GetPokemon(pokemonId string) (*model.Pokemon, error)
+}
+
+type repo struct{}
+
+func NewPokemonRepository() PokemonRepository {
+	return &repo{}
+}
+
+func (*repo) GetPokemon(pokemonId string) (*model.Pokemon, error) {
 
 	csvFile, err := os.Open(common.CsvPokemonName)
 	if err != nil {
-		return nil, 500, err
+		return nil, err
 	}
 	fmt.Println("Successfully Opened CSV file")
 	defer csvFile.Close()
 
 	csvLines, err := csv.NewReader(csvFile).ReadAll()
 	if err != nil {
-		return nil, 500, err
+		return nil, err
 	}
 
 	for _, line := range csvLines {
@@ -55,9 +65,9 @@ func GetPokemonInfo(pokemonId string) (*model.Pokemon, int, error) {
 		id, _ = strconv.Atoi(pokemonId)
 		if pokemon.Id == id {
 
-			return &pokemon, 200, nil
+			return &pokemon, nil
 		}
 	}
 
-	return nil, 404, errors.New("pokemon not found")
+	return nil, errors.New(common.PokemonNotFound)
 }

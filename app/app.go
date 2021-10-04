@@ -1,20 +1,30 @@
 package app
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/bifr0ns/academy-go-q32021/common"
-	"github.com/bifr0ns/academy-go-q32021/routes"
+	"github.com/bifr0ns/academy-go-q32021/controller"
+	"github.com/bifr0ns/academy-go-q32021/repository"
+	"github.com/bifr0ns/academy-go-q32021/router"
+	"github.com/bifr0ns/academy-go-q32021/service"
+)
 
-	"github.com/gorilla/mux"
+var (
+	pokemonRepository repository.PokemonRepository = repository.NewPokemonRepository()
+	pokemonService    service.PokemonService       = service.NewPokemonService(pokemonRepository)
+	pokemonController controller.PokemonController = controller.NewPokemonController(pokemonService)
+	httpRouter        router.Router                = router.NewMuxRouter()
 )
 
 func Start() {
 
-	router := mux.NewRouter()
+	httpRouter.GET("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Up and running...")
+	})
 
-	routes.Setup(router)
+	httpRouter.GET("/pokemons/{pokemon_id:[0-9]+}", pokemonController.GetPokemonById)
 
-	log.Fatal(http.ListenAndServe(common.LocalHost+":"+common.LocalPort, router))
+	httpRouter.SERVE(common.LocalHost + ":" + common.LocalPort)
 }
