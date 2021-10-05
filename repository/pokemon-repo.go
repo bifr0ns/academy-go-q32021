@@ -6,21 +6,30 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/bifr0ns/academy-go-q32021/common"
 	"github.com/bifr0ns/academy-go-q32021/model"
 )
 
+//GetPokemon recieves a string, and returns a model of Pokemon and error if any.
+//
+//SaveExternalPokemon recieves a model of PokemonExternal, and returns a model of Pokemon and error if any.
 type PokemonRepository interface {
 	GetPokemon(pokemonId string) (*model.Pokemon, error)
+	SaveExternalPokemon(pokemon model.PokemonExternal) (*model.Pokemon, error)
 }
 
 type repo struct{}
 
+//NewPokemonController returns an interface of PokemonRepository.
 func NewPokemonRepository() PokemonRepository {
 	return &repo{}
 }
 
+//GetPokemon of type repo recieves an id of type string.
+//Opens the CSV file and finds the pokemon by the given id, if found creates a Pokemon model.
+//Will return a model of Pokemon and error if any.
 func (*repo) GetPokemon(pokemonId string) (*model.Pokemon, error) {
 
 	csvFile, err := os.Open(common.CsvPokemonName)
@@ -70,4 +79,106 @@ func (*repo) GetPokemon(pokemonId string) (*model.Pokemon, error) {
 	}
 
 	return nil, errors.New(common.PokemonNotFound)
+}
+
+//SaveExternalPokemon of type repo recieves a model of PokemonExternal.
+//Searchs if the pokemon doesnt exist already in the CSV file.
+//Writes the new pokemon if its not in the CSV, and creates the Pokemon model.
+//Will return a model of Pokemon and error if any.
+func (*repo) SaveExternalPokemon(externalPokemon model.PokemonExternal) (*model.Pokemon, error) {
+
+	//Checks if pokemon already exists in the CSV file
+	csvPokemon, _ := NewPokemonRepository().GetPokemon(strconv.Itoa(externalPokemon.Id))
+	if csvPokemon != nil {
+		return nil, errors.New(common.PokemonAlreadyExist)
+	}
+
+	csvFile, err := os.OpenFile(common.CsvPokemonName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("Preparing to write into CSV file")
+
+	writer := csv.NewWriter(csvFile)
+
+	id := externalPokemon.Id
+	pokemonId := strconv.Itoa(int(id))
+	name := strings.Title(externalPokemon.Name)
+	type1 := strings.Title(externalPokemon.Types[0].Type["name"])
+	type2 := ""
+	if len(externalPokemon.Types) > 1 {
+		type2 = strings.Title(externalPokemon.Types[1].Type["name"])
+	}
+	total := externalPokemon.Stats[0].BaseStat + externalPokemon.Stats[1].BaseStat + externalPokemon.Stats[2].BaseStat +
+		externalPokemon.Stats[3].BaseStat + externalPokemon.Stats[4].BaseStat + externalPokemon.Stats[5].BaseStat
+	hp := externalPokemon.Stats[0].BaseStat
+	attack := externalPokemon.Stats[1].BaseStat
+	defense := externalPokemon.Stats[2].BaseStat
+	speedAttack := externalPokemon.Stats[3].BaseStat
+	speedDefense := externalPokemon.Stats[4].BaseStat
+	speed := externalPokemon.Stats[5].BaseStat
+	generation := getGeneration(id)
+	legendary := strings.Title(strconv.FormatBool(!externalPokemon.NotLegendary))
+
+	pokemon := []string{
+		pokemonId,
+		name,
+		type1,
+		type2,
+		strconv.Itoa(total),
+		strconv.Itoa(hp),
+		strconv.Itoa(attack),
+		strconv.Itoa(defense),
+		strconv.Itoa(speedAttack),
+		strconv.Itoa(speedDefense),
+		strconv.Itoa(speed),
+		strconv.Itoa(generation),
+		legendary,
+	}
+
+	if err := writer.Write(pokemon); err != nil {
+		return nil, err
+	}
+
+	writer.Flush()
+
+	pokemonCreated := model.Pokemon{
+		Id:           id,
+		Name:         name,
+		Type1:        type1,
+		Type2:        type2,
+		Total:        total,
+		HP:           hp,
+		Attack:       attack,
+		Defense:      defense,
+		SpeedAttack:  speedAttack,
+		SpeedDefense: speedDefense,
+		Speed:        speed,
+		Generation:   generation,
+		Legendary:    legendary,
+	}
+
+	return &pokemonCreated, nil
+}
+
+func getGeneration(id int) int {
+	switch {
+	case id <= 151:
+		return 1
+	case id <= 251:
+		return 2
+	case id <= 386:
+		return 3
+	case id <= 493:
+		return 4
+	case id <= 649:
+		return 5
+	case id <= 721:
+		return 6
+	case id <= 809:
+		return 7
+	case id <= 901:
+		return 8
+	}
+	return 1
 }
