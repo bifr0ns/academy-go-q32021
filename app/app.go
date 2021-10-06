@@ -4,17 +4,16 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/bifr0ns/academy-go-q32021/client"
 	"github.com/bifr0ns/academy-go-q32021/common"
 	"github.com/bifr0ns/academy-go-q32021/controller"
 	"github.com/bifr0ns/academy-go-q32021/repository"
 	"github.com/bifr0ns/academy-go-q32021/router"
 	"github.com/bifr0ns/academy-go-q32021/service"
-
-	"github.com/go-resty/resty/v2"
 )
 
 var (
-	restClient        = resty.New()
+	restClient        = client.NewRestyClient()
 	pokemonRepository = repository.PokemonRepo{}
 	pokemonService    = service.NewPokemonService(&pokemonRepository)
 	pokemonController = controller.NewPokemonController(&pokemonService, restClient)

@@ -2,20 +2,22 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/bifr0ns/academy-go-q32021/common"
 	fmte "github.com/bifr0ns/academy-go-q32021/error"
 	"github.com/bifr0ns/academy-go-q32021/model"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/gorilla/mux"
 )
 
 type pokemonService interface {
 	FindById(pokemonId string) (*model.Pokemon, error)
 	SaveFromExternal(externalPokemon model.PokemonExternal) (*model.Pokemon, error)
+}
+
+type pokemonClient interface {
+	GetExternalPokemon(uri string, id string) model.PokemonExternal
 }
 
 //PokemonController contains a resty.Client and an interface of pokemonService, which contains two methods.
@@ -25,11 +27,11 @@ type pokemonService interface {
 //SaveFromExternal recieves a model of PokemonExternal, and returns a model of Pokemon and error if any.
 type PokemonController struct {
 	service pokemonService
-	client  *resty.Client
+	client  pokemonClient
 }
 
 //NewPokemonController expects to recieve PokemonService and a restClient, returns an struct of PokemonController.
-func NewPokemonController(service pokemonService, restClient *resty.Client) PokemonController {
+func NewPokemonController(service pokemonService, restClient pokemonClient) PokemonController {
 	return PokemonController{service, restClient}
 }
 
@@ -63,19 +65,11 @@ func (pc *PokemonController) GetExternalPokemonById(rw http.ResponseWriter, r *h
 	vars := mux.Vars(r)
 	pokemonId := vars["pokemon_id"]
 
-	resp, _ := pc.client.R().
-		SetPathParams(map[string]string{
-			"pokemonId": fmt.Sprint(pokemonId),
-		}).
-		SetResult(model.PokemonExternal{}).
-		SetHeader("Accept", "application/json").
-		Get("https://pokeapi.co/api/v2/pokemon/{pokemonId}")
-
-	pokemon := *resp.Result().(*model.PokemonExternal)
+	externalPokemon := pc.client.GetExternalPokemon(common.GetPokemonUri, pokemonId)
 
 	rw.Header().Add("Content-Type", "application/json")
 
-	externalPokemon, err := pc.service.SaveFromExternal(pokemon)
+	pokemon, err := pc.service.SaveFromExternal(externalPokemon)
 
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -83,5 +77,5 @@ func (pc *PokemonController) GetExternalPokemonById(rw http.ResponseWriter, r *h
 		return
 	}
 
-	json.NewEncoder(rw).Encode(externalPokemon)
+	json.NewEncoder(rw).Encode(pokemon)
 }

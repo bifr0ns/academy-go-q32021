@@ -7,4 +7,6 @@ const (
 	PokemonAlreadyExist = "pokemon is already on the CSV File"
 
 	CsvPokemonName = "pokemon.csv"
+
+	GetPokemonUri = "https://pokeapi.co/api/v2/pokemon/{pokemonId}"
 )
