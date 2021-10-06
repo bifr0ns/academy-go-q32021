@@ -14,11 +14,11 @@ import (
 )
 
 var (
-	restClient                                     = resty.New()
-	pokemonRepository repository.PokemonRepository = repository.NewPokemonRepository()
-	pokemonService    service.PokemonService       = service.NewPokemonService(pokemonRepository)
-	pokemonController controller.PokemonController = controller.NewPokemonController(pokemonService, restClient)
-	httpRouter        router.Router                = router.NewMuxRouter()
+	restClient        = resty.New()
+	pokemonRepository = repository.PokemonRepo{}
+	pokemonService    = service.NewPokemonService(&pokemonRepository)
+	pokemonController = controller.NewPokemonController(&pokemonService, restClient)
+	httpRouter        = router.NewMuxRouter()
 )
 
 func Start() {

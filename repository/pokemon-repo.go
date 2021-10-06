@@ -12,25 +12,13 @@ import (
 	"github.com/bifr0ns/academy-go-q32021/model"
 )
 
-//GetPokemon recieves a string, and returns a model of Pokemon and error if any.
-//
-//SaveExternalPokemon recieves a model of PokemonExternal, and returns a model of Pokemon and error if any.
-type PokemonRepository interface {
-	GetPokemon(pokemonId string) (*model.Pokemon, error)
-	SaveExternalPokemon(pokemon model.PokemonExternal) (*model.Pokemon, error)
-}
+//PokemonRepo returns the struct to be used for this repository.
+type PokemonRepo struct{}
 
-type repo struct{}
-
-//NewPokemonController returns an interface of PokemonRepository.
-func NewPokemonRepository() PokemonRepository {
-	return &repo{}
-}
-
-//GetPokemon of type repo recieves an id of type string.
+//GetPokemon of type PokemonRepo recieves an id of type string.
 //Opens the CSV file and finds the pokemon by the given id, if found creates a Pokemon model.
 //Will return a model of Pokemon and error if any.
-func (*repo) GetPokemon(pokemonId string) (*model.Pokemon, error) {
+func (pr *PokemonRepo) GetPokemon(pokemonId string) (*model.Pokemon, error) {
 
 	csvFile, err := os.Open(common.CsvPokemonName)
 	if err != nil {
@@ -81,14 +69,14 @@ func (*repo) GetPokemon(pokemonId string) (*model.Pokemon, error) {
 	return nil, errors.New(common.PokemonNotFound)
 }
 
-//SaveExternalPokemon of type repo recieves a model of PokemonExternal.
+//SaveExternalPokemon of type PokemonRepo recieves a model of PokemonExternal.
 //Searchs if the pokemon doesnt exist already in the CSV file.
 //Writes the new pokemon if its not in the CSV, and creates the Pokemon model.
 //Will return a model of Pokemon and error if any.
-func (*repo) SaveExternalPokemon(externalPokemon model.PokemonExternal) (*model.Pokemon, error) {
+func (pr *PokemonRepo) SaveExternalPokemon(externalPokemon model.PokemonExternal) (*model.Pokemon, error) {
 
 	//Checks if pokemon already exists in the CSV file
-	csvPokemon, _ := NewPokemonRepository().GetPokemon(strconv.Itoa(externalPokemon.Id))
+	csvPokemon, _ := pr.GetPokemon(strconv.Itoa(externalPokemon.Id))
 	if csvPokemon != nil {
 		return nil, errors.New(common.PokemonAlreadyExist)
 	}
