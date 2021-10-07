@@ -15,12 +15,16 @@ import (
 //PokemonRepo returns the struct to be used for this repository.
 type PokemonRepo struct{}
 
+func NewPokemonRepo() PokemonRepo {
+	return PokemonRepo{}
+}
+
 //GetPokemon of type PokemonRepo recieves an id of type string.
 //Opens the CSV file and finds the pokemon by the given id, if found creates a Pokemon model.
 //Will return a model of Pokemon and error if any.
-func (pr *PokemonRepo) GetPokemon(pokemonId string) (*model.Pokemon, error) {
+func (pr *PokemonRepo) GetPokemon(pokemonId string, csvFileName string) (*model.Pokemon, error) {
 
-	csvFile, err := os.Open(common.CsvPokemonName)
+	csvFile, err := os.Open(csvFileName)
 	if err != nil {
 		return nil, err
 	}
@@ -73,15 +77,15 @@ func (pr *PokemonRepo) GetPokemon(pokemonId string) (*model.Pokemon, error) {
 //Searchs if the pokemon doesnt exist already in the CSV file.
 //Writes the new pokemon if its not in the CSV, and creates the Pokemon model.
 //Will return a model of Pokemon and error if any.
-func (pr *PokemonRepo) SaveExternalPokemon(externalPokemon model.PokemonExternal) (*model.Pokemon, error) {
+func (pr *PokemonRepo) SaveExternalPokemon(externalPokemon model.PokemonExternal, csvFileName string) (*model.Pokemon, error) {
 
 	//Checks if pokemon already exists in the CSV file
-	csvPokemon, _ := pr.GetPokemon(strconv.Itoa(externalPokemon.Id))
+	csvPokemon, _ := pr.GetPokemon(strconv.Itoa(externalPokemon.Id), csvFileName)
 	if csvPokemon != nil {
 		return nil, errors.New(common.PokemonAlreadyExist)
 	}
 
-	csvFile, err := os.OpenFile(common.CsvPokemonName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	csvFile, err := os.OpenFile(csvFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		return nil, err
 	}

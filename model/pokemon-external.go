@@ -5,16 +5,16 @@ type PokemonExternal struct {
 	Id           int            `json:"id"`
 	Name         string         `json:"name"`
 	NotLegendary bool           `json:"is_default"`
-	Types        []pokemonTypes `json:"types"`
-	Stats        []pokemonStats `json:"stats"`
+	Types        []PokemonTypes `json:"types"`
+	Stats        []PokemonStats `json:"stats"`
 }
 
-type pokemonTypes struct {
+type PokemonTypes struct {
 	Slot int               `json:"slot"`
 	Type map[string]string `json:"type"`
 }
 
-type pokemonStats struct {
+type PokemonStats struct {
 	BaseStat int               `json:"base_stat"`
 	Stat     map[string]string `json:"stat"`
 }
