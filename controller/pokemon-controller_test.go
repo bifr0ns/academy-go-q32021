@@ -151,13 +151,17 @@ func TestGetPokemonById(t *testing.T) {
 			mockService := new(MockService)
 			mockClient := new(MockClient)
 
+			//Mock methods used on controller
 			mockService.On("FindById").Return(tC.returned, tC.returnErr)
 
+			//Create new HTTP request
 			req, _ := http.NewRequest("GET", tC.uri, nil)
 			req = mux.SetURLVars(req, map[string]string{"pokemon_id": tC.parameter})
 
+			//Record the HTTP response
 			response := httptest.NewRecorder()
 
+			//Assign HTTP request controller function
 			pokemonController := NewPokemonController(mockService, mockClient)
 			controller := http.HandlerFunc(pokemonController.GetPokemonById)
 			controller.ServeHTTP(response, req)
@@ -223,17 +227,22 @@ func TestGetExternalPokemonById(t *testing.T) {
 			mockService := new(MockService)
 			mockClient := new(MockClient)
 
+			//Mock methods used on controller
 			mockClient.On("GetExternalPokemon").Return(tC.clientResponse)
 			mockService.On("SaveFromExternal").Return(tC.returned, nil)
-			mockService.On("FindById").Return(tC.returned, nil)
 
+			//Create new HTTP request
 			req, _ := http.NewRequest("POST", tC.uri, nil)
 			req = mux.SetURLVars(req, map[string]string{"pokemon_id": tC.parameter})
 
+			//Record the HTTP response
 			response := httptest.NewRecorder()
 
+			//Assign HTTP request controller function
 			pokemonController := NewPokemonController(mockService, mockClient)
 			controller := http.HandlerFunc(pokemonController.GetExternalPokemonById)
+
+			//Dispatch the HTTP request
 			controller.ServeHTTP(response, req)
 
 			status := response.Code
