@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/bifr0ns/academy-go-q32021/common"
 	fmte "github.com/bifr0ns/academy-go-q32021/error"
@@ -41,9 +42,16 @@ func (pc *PokemonController) GetPokemonById(rw http.ResponseWriter, r *http.Requ
 	vars := mux.Vars(r)
 	pokemonId := vars["pokemon_id"]
 
-	pokemon, err := pc.service.FindById(pokemonId)
-
 	rw.Header().Add("Content-Type", "application/json")
+
+	_, err := strconv.Atoi(pokemonId)
+	if err != nil && pokemonId != "" {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(fmte.FormattedError{Message: common.InvalidParameters})
+		return
+	}
+
+	pokemon, err := pc.service.FindById(pokemonId)
 
 	if err != nil {
 		if err.Error() == common.PokemonNotFound {
@@ -65,9 +73,21 @@ func (pc *PokemonController) GetExternalPokemonById(rw http.ResponseWriter, r *h
 	vars := mux.Vars(r)
 	pokemonId := vars["pokemon_id"]
 
-	externalPokemon := pc.client.GetExternalPokemon(common.GetPokemonUri, pokemonId)
-
 	rw.Header().Add("Content-Type", "application/json")
+
+	_, err := strconv.Atoi(pokemonId)
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(fmte.FormattedError{Message: common.InvalidParameters})
+		return
+	}
+
+	externalPokemon := pc.client.GetExternalPokemon(common.GetPokemonUri, pokemonId)
+	if externalPokemon.Id == 0 {
+		rw.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(rw).Encode(fmte.FormattedError{Message: common.PokemonNotFound})
+		return
+	}
 
 	pokemon, err := pc.service.SaveFromExternal(externalPokemon)
 
