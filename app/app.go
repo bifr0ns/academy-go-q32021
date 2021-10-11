@@ -14,7 +14,7 @@ import (
 
 var (
 	restClient        = client.NewRestyClient()
-	pokemonRepository = repository.PokemonRepo{}
+	pokemonRepository = repository.NewPokemonRepo()
 	pokemonService    = service.NewPokemonService(&pokemonRepository)
 	pokemonController = controller.NewPokemonController(&pokemonService, restClient)
 	httpRouter        = router.NewMuxRouter()
@@ -27,7 +27,7 @@ func Start() {
 	})
 
 	httpRouter.GET("/pokemons/{pokemon_id}", pokemonController.GetPokemonById)
-	httpRouter.POST("/api/pokemons/{pokemon_id}", pokemonController.GetExternalPokemonById)
+	httpRouter.POST("pokemons/{pokemon_id}", pokemonController.GetExternalPokemonById)
 
 	httpRouter.SERVE(common.LocalHost + ":" + common.LocalPort)
 }

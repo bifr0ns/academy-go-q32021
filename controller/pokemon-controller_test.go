@@ -193,7 +193,7 @@ func TestGetExternalPokemonById(t *testing.T) {
 	}{
 		{
 			name:           "Valid response",
-			uri:            "/api/pokemons",
+			uri:            "/pokemons",
 			parameter:      "888",
 			returnErr:      nil,
 			status:         200,
@@ -203,7 +203,7 @@ func TestGetExternalPokemonById(t *testing.T) {
 		},
 		{
 			name:           "Pokemon not found",
-			uri:            "/api/pokemons",
+			uri:            "/pokemons",
 			parameter:      "72819364",
 			returnErr:      errors.New(common.PokemonNotFound),
 			status:         404,
@@ -213,7 +213,7 @@ func TestGetExternalPokemonById(t *testing.T) {
 		},
 		{
 			name:           "Invalid request",
-			uri:            "/api/pokemons",
+			uri:            "/pokemons",
 			parameter:      "abc",
 			returnErr:      errors.New(common.InvalidParameters),
 			status:         400,
