@@ -93,6 +93,42 @@ func (pr *PokemonRepo) SaveExternalPokemon(externalPokemon model.PokemonExternal
 
 	writer := csv.NewWriter(csvFile)
 
+	pokemon := getPokemonFromExternal(externalPokemon)
+
+	if err := writer.Write(pokemon); err != nil {
+		return nil, err
+	}
+
+	writer.Flush()
+
+	pokemonCreated := createPokemon(pokemon)
+
+	return &pokemonCreated, nil
+}
+
+func getGeneration(id int) int {
+	switch {
+	case id <= 151:
+		return 1
+	case id <= 251:
+		return 2
+	case id <= 386:
+		return 3
+	case id <= 493:
+		return 4
+	case id <= 649:
+		return 5
+	case id <= 721:
+		return 6
+	case id <= 809:
+		return 7
+	case id <= 901:
+		return 8
+	}
+	return 1
+}
+
+func getPokemonFromExternal(externalPokemon model.PokemonExternal) []string {
 	id := externalPokemon.Id
 	pokemonId := strconv.Itoa(int(id))
 	name := strings.Title(externalPokemon.Name)
@@ -128,17 +164,26 @@ func (pr *PokemonRepo) SaveExternalPokemon(externalPokemon model.PokemonExternal
 		legendary,
 	}
 
-	if err := writer.Write(pokemon); err != nil {
-		return nil, err
-	}
+	return pokemon
+}
 
-	writer.Flush()
+func createPokemon(pokemon []string) model.Pokemon {
+
+	id, _ := strconv.Atoi(pokemon[0])
+	total, _ := strconv.Atoi(pokemon[4])
+	hp, _ := strconv.Atoi(pokemon[5])
+	attack, _ := strconv.Atoi(pokemon[6])
+	defense, _ := strconv.Atoi(pokemon[7])
+	speedAttack, _ := strconv.Atoi(pokemon[8])
+	speedDefense, _ := strconv.Atoi(pokemon[9])
+	speed, _ := strconv.Atoi(pokemon[10])
+	generation, _ := strconv.Atoi(pokemon[11])
 
 	pokemonCreated := model.Pokemon{
 		Id:           id,
-		Name:         name,
-		Type1:        type1,
-		Type2:        type2,
+		Name:         pokemon[1],
+		Type1:        pokemon[2],
+		Type2:        pokemon[3],
 		Total:        total,
 		HP:           hp,
 		Attack:       attack,
@@ -147,30 +192,8 @@ func (pr *PokemonRepo) SaveExternalPokemon(externalPokemon model.PokemonExternal
 		SpeedDefense: speedDefense,
 		Speed:        speed,
 		Generation:   generation,
-		Legendary:    legendary,
+		Legendary:    pokemon[12],
 	}
 
-	return &pokemonCreated, nil
-}
-
-func getGeneration(id int) int {
-	switch {
-	case id <= 151:
-		return 1
-	case id <= 251:
-		return 2
-	case id <= 386:
-		return 3
-	case id <= 493:
-		return 4
-	case id <= 649:
-		return 5
-	case id <= 721:
-		return 6
-	case id <= 809:
-		return 7
-	case id <= 901:
-		return 8
-	}
-	return 1
+	return pokemonCreated
 }
