@@ -28,6 +28,7 @@ func Start() {
 
 	httpRouter.GET("/pokemons/{pokemon_id}", pokemonController.GetPokemonById)
 	httpRouter.POST("/pokemons/{pokemon_id}", pokemonController.GetExternalPokemonById)
+	httpRouter.GETWITHQUERY("/pokemons", pokemonController.GetPokemonsByWorker)
 
 	httpRouter.SERVE(common.LocalHost + ":" + common.LocalPort)
 }
