@@ -1,5 +1,6 @@
-package repositories
+package model
 
+//Pokemon is used in internal API (csv).
 type Pokemon struct {
 	Id           int    `json:"id"`
 	Name         string `json:"name"`
