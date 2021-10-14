@@ -80,7 +80,6 @@ Example when pinging the second link
         "legendary": "False"
     }
 
-<<<<<<< Updated upstream
 ### Query pokemons
 
 Example when pinging the third link. All of the parameters are optional.
@@ -133,7 +132,7 @@ Type can be _all/even/odd_
             "legendary": "False"
         }
     ]
-=======
+
 ## Build and run a docker image
 
 Build the docker image
@@ -143,4 +142,3 @@ Build the docker image
 Run the docker image locally
 
     docker run -p 8080:8000 academy-go-q32021
->>>>>>> Stashed changes
