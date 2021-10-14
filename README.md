@@ -24,11 +24,11 @@ or
 
 ## Functionality
 
-The project contains two endpoints as of now (GET) _/pokemons/{pokemon_id}_ and (POST) _/api/pokemons/{pokemon_id}_
+The project contains two endpoints as of now (GET) _/pokemons/{pokemon_id}_ , (POST) _/api/pokemons/{pokemon_id}_ and _/pokemons?type={type}&items_per_workers={items_per_workers}&items={items}_
 
-The first endpoint will let us get a pokemon from our CSV file. And the second endpoint will get a pokemon from an external API ([PokeAPI](https://pokeapi.co/)) and if the pokemon does not exists in our CSV it will save it.
+The first endpoint will let us get a pokemon from our CSV file. And the second endpoint will get a pokemon from an external API ([PokeAPI](https://pokeapi.co/)) and if the pokemon does not exists in our CSV it will save it. The third endpoint will get us an array of pokemons, based on our query parameters (items, type, items_per_workers) all of them optional.
 
-We can hit the first endpoint with the following link http://localhost:8000/pokemons/155 and the second with http://localhost:8000/api/pokemons/888
+We can hit the first endpoint with the following link http://localhost:8000/pokemons/155, the second with http://localhost:8000/api/pokemons/888 and the third with http://localhost:8000/pokemons?type=even&items_per_workers=10&items=21
 
 ### Pokemons endpoint
 
@@ -69,3 +69,56 @@ Example when pinging the second link
         "generation": 8,
         "legendary": "False"
     }
+
+### Query pokemons
+
+Example when pinging the third link. All of the parameters are optional.
+Type can be _all/even/odd_
+
+    [
+        {
+            "id": 1,
+            "name": "Bulbasaur",
+            "type_1": "Grass",
+            "type_2": "Poison",
+            "total_points": 318,
+            "hp": 45,
+            "attack": 49,
+            "defense": 49,
+            "speed_attack": 65,
+            "speed_defense": 65,
+            "speed": 45,
+            "generation": 1,
+            "legendary": "False"
+        },
+        {
+            "id": 2,
+            "name": "Ivysaur",
+            "type_1": "Grass",
+            "type_2": "Poison",
+            "total_points": 405,
+            "hp": 60,
+            "attack": 62,
+            "defense": 63,
+            "speed_attack": 80,
+            "speed_defense": 80,
+            "speed": 60,
+            "generation": 1,
+            "legendary": "False"
+        },
+        {
+            "id": 3,
+            "name": "Venusaur",
+            "type_1": "Grass",
+            "type_2": "Poison",
+            "total_points": 525,
+            "hp": 80,
+            "attack": 82,
+            "defense": 83,
+            "speed_attack": 100,
+            "speed_defense": 100,
+            "speed": 80,
+            "generation": 1,
+            "legendary": "False"
+        }
+    ]
