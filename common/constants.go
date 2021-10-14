@@ -2,7 +2,7 @@ package common
 
 const (
 	LocalHost           = "localhost"
-	LocalPort           = "8000"
+	Port                = "PORT"
 	PokemonNotFound     = "pokemon not found"
 	PokemonAlreadyExist = "pokemon is already on the CSV File"
 	InvalidParameters   = "invalid parameters"

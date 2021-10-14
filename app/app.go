@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/bifr0ns/academy-go-q32021/client"
 	"github.com/bifr0ns/academy-go-q32021/common"
@@ -30,5 +31,5 @@ func Start() {
 	httpRouter.POST("/pokemons/{pokemon_id}", pokemonController.GetExternalPokemonById)
 	httpRouter.GETWITHQUERY("/pokemons", pokemonController.GetPokemonsByWorker)
 
-	httpRouter.SERVE(common.LocalHost + ":" + common.LocalPort)
+	httpRouter.SERVE(os.Getenv(common.Port))
 }

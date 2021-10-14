@@ -12,6 +12,16 @@ We need to go into the root of the project and run
 
     go run main.go
 
+### Run the project using a Docker image
+
+_Note: The image right now has the version of the previous PR #1 (Second Deliverable) and I will wait for PR #2 to merge to build a push the new one._
+
+    docker run --rm -p 8080:8000 bifr0ns/academy-go-q32021
+
+And you will use the following link for endpoints
+
+    http://localhost:8080/pokemons ...
+
 ## Tests
 
 We can run tests with
@@ -70,6 +80,7 @@ Example when pinging the second link
         "legendary": "False"
     }
 
+<<<<<<< Updated upstream
 ### Query pokemons
 
 Example when pinging the third link. All of the parameters are optional.
@@ -122,3 +133,14 @@ Type can be _all/even/odd_
             "legendary": "False"
         }
     ]
+=======
+## Build and run a docker image
+
+Build the docker image
+
+    docker build -t academy-go-q32021 .
+
+Run the docker image locally
+
+    docker run -p 8080:8000 academy-go-q32021
+>>>>>>> Stashed changes
