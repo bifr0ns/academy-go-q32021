@@ -82,6 +82,8 @@ var pokemonNotFoundResponse = "{\"message\":\"pokemon not found\"}\n"
 
 var badRequestResponse = "{\"message\":\"invalid parameters\"}\n"
 
+var pokemonsJsonResponse = "[{\"id\":155,\"name\":\"Cyndaquil\",\"type_1\":\"Fire\",\"type_2\":\"\",\"total_points\":309,\"hp\":39,\"attack\":52,\"defense\":43,\"speed_attack\":60,\"speed_defense\":50,\"speed\":65,\"generation\":2,\"legendary\":\"False\"},{\"id\":888,\"name\":\"Zacian-Hero\",\"type_1\":\"Fairy\",\"type_2\":\"\",\"total_points\":670,\"hp\":92,\"attack\":130,\"defense\":115,\"speed_attack\":80,\"speed_defense\":115,\"speed\":138,\"generation\":8,\"legendary\":\"False\"}]\n"
+
 type MockService struct {
 	mock.Mock
 }
@@ -106,6 +108,12 @@ func (mock *MockClient) GetExternalPokemon(uri string, id string) model.PokemonE
 	args := mock.Called()
 	result := args.Get(0)
 	return result.(model.PokemonExternal)
+}
+
+func (mock *MockService) GetPokemons(dataType string, items int, items_per_workers int) ([]model.Pokemon, error) {
+	args := mock.Called()
+	result := args.Get(0)
+	return result.([]model.Pokemon), args.Error(1)
 }
 
 func TestGetPokemonById(t *testing.T) {
@@ -247,6 +255,73 @@ func TestGetExternalPokemonById(t *testing.T) {
 
 			status := response.Code
 			responseBody := response.Body.String()
+
+			assert.Equal(t, tC.status, status)
+			assert.Equal(t, tC.response, responseBody)
+		})
+	}
+}
+
+func TestGetPokemonsByWorker(t *testing.T) {
+	var pokemonsByWorker []model.Pokemon
+
+	pokemonsByWorker = append(pokemonsByWorker, pokemon)
+	pokemonsByWorker = append(pokemonsByWorker, pokemonFromExternal)
+
+	testCases := []struct {
+		name      string
+		uri       string
+		query     string
+		returnErr error
+		status    int
+		response  string
+		returned  []model.Pokemon
+	}{
+		{
+			name:      "Valid response",
+			uri:       "/pokemons",
+			query:     "?type=all&items_per_workers=1&items=2",
+			returnErr: nil,
+			status:    200,
+			response:  pokemonsJsonResponse,
+			returned:  pokemonsByWorker,
+		},
+		{
+			name:      "Invalid request",
+			uri:       "/pokemons",
+			query:     "?type=1",
+			returnErr: errors.New(common.InvalidParameters),
+			status:    400,
+			response:  badRequestResponse,
+			returned:  pokemonsByWorker,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			mockService := new(MockService)
+			mockClient := new(MockClient)
+
+			//Mock methods used on controller
+			mockService.On("GetPokemons").Return(tC.returned, tC.returnErr)
+
+			//Create new HTTP request
+			req, _ := http.NewRequest("GET", tC.uri+tC.query, nil)
+			// req = mux.SetURLVars(req, map[string]string{"pokemon_id": tC.parameter})
+
+			//Record the HTTP response
+			response := httptest.NewRecorder()
+
+			//Assign HTTP request controller function
+			pokemonController := NewPokemonController(mockService, mockClient)
+			controller := http.HandlerFunc(pokemonController.GetPokemonsByWorker)
+			controller.ServeHTTP(response, req)
+
+			status := response.Code
+			responseBody := response.Body.String()
+
+			if status != 400 {
+				mockService.AssertExpectations(t)
+			}
 
 			assert.Equal(t, tC.status, status)
 			assert.Equal(t, tC.response, responseBody)

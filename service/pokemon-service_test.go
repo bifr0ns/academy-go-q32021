@@ -82,6 +82,12 @@ func (mock *MockRepository) SaveExternalPokemon(pokemon model.PokemonExternal, c
 	return result.(*model.Pokemon), args.Error(1)
 }
 
+func (mock *MockRepository) GetPokemons(dataType string, items int, items_per_workers int, csvFileName string) ([]model.Pokemon, error) {
+	args := mock.Called()
+	result := args.Get(0)
+	return result.([]model.Pokemon), args.Error(1)
+}
+
 func TestFindById(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -123,4 +129,22 @@ func TestSaveFromExternal(t *testing.T) {
 	mockRepo.AssertExpectations(t)
 
 	assert.Equal(t, strings.Title(externalPokemon.Name), result.Name)
+}
+
+func TestGetPokemons(t *testing.T) {
+	mockRepo := new(MockRepository)
+	var pokemons []model.Pokemon
+
+	pokemons = append(pokemons, pokemon)
+	pokemons = append(pokemons, pokemon)
+
+	mockRepo.On("GetPokemons").Return(pokemons, nil)
+
+	testService := NewPokemonService(mockRepo)
+
+	result, _ := testService.GetPokemons("all", 2, 1)
+
+	mockRepo.AssertExpectations(t)
+
+	assert.Equal(t, strings.Title(pokemons[0].Name), result[0].Name)
 }

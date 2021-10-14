@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/bifr0ns/academy-go-q32021/common"
 	fmte "github.com/bifr0ns/academy-go-q32021/error"
@@ -15,6 +16,7 @@ import (
 type pokemonService interface {
 	FindById(pokemonId string) (*model.Pokemon, error)
 	SaveFromExternal(externalPokemon model.PokemonExternal) (*model.Pokemon, error)
+	GetPokemons(dataType string, items int, items_per_workers int) ([]model.Pokemon, error)
 }
 
 type pokemonClient interface {
@@ -98,4 +100,63 @@ func (pc *PokemonController) GetExternalPokemonById(rw http.ResponseWriter, r *h
 	}
 
 	json.NewEncoder(rw).Encode(pokemon)
+}
+
+//GetPokemonsByWorker of type pokemonController, handles the request to create an array of pokemons,
+//calls the service to write pokemons based on the query
+//The response is encoded in json.
+func (pc *PokemonController) GetPokemonsByWorker(rw http.ResponseWriter, r *http.Request) {
+
+	var types string
+	var items string
+	var items_per_workers string
+
+	vars := r.URL.Query()
+	types = vars.Get("type")
+	items = vars.Get("items")
+	items_per_workers = vars.Get("items_per_workers")
+
+	if types == "" {
+		types = "all"
+	}
+
+	if items == "" {
+		items = "-1"
+	}
+
+	if items_per_workers == "" {
+		items_per_workers = "-1"
+	}
+
+	rw.Header().Add("Content-Type", "application/json")
+
+	dataType := strings.ToLower(types)
+	if dataType != "odd" && dataType != "even" && dataType != "all" {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(fmte.FormattedError{Message: common.InvalidParameters})
+		return
+	}
+
+	items_int, err := strconv.Atoi(items)
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(fmte.FormattedError{Message: common.InvalidParameters})
+		return
+	}
+
+	items_per_workers_int, err := strconv.Atoi(items_per_workers)
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(fmte.FormattedError{Message: common.InvalidParameters})
+		return
+	}
+
+	pokemons, err := pc.service.GetPokemons(types, items_int, items_per_workers_int)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(rw).Encode(fmte.FormattedError{Message: err.Error()})
+		return
+	}
+
+	json.NewEncoder(rw).Encode(pokemons)
 }
