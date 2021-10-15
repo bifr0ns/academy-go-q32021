@@ -8,6 +8,10 @@ This project runs with Go. In order to run the project we need to install [Go](h
 
 ## Run the project
 
+We need to add an environment variable called PORT in our computer where we will run our local project based on os.Getenv("PORT")
+
+    export PORT=8000
+
 We need to go into the root of the project and run
 
     go run main.go
