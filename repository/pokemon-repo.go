@@ -205,7 +205,7 @@ var wg sync.WaitGroup
 //GetPokemonsof type PokemonRepo recieves data based on a query
 //Opens the csv file
 //Based on workers and go routines will find pokemons filtered by the query, will return them
-func (pr *PokemonRepo) GetPokemons(dataType string, items int, items_per_workers int, csvFileName string) ([]model.Pokemon, error) {
+func (pr *PokemonRepo) GetPokemons(dataType string, items int, items_per_workers int, workers int, csvFileName string) ([]model.Pokemon, error) {
 	var pokemons []model.Pokemon
 
 	csvLines, err := openFile(csvFileName)
@@ -214,7 +214,6 @@ func (pr *PokemonRepo) GetPokemons(dataType string, items int, items_per_workers
 		return nil, err
 	}
 
-	workers := 2
 	dataSize := len(csvLines) - 1
 	isAll := 1
 
@@ -224,6 +223,10 @@ func (pr *PokemonRepo) GetPokemons(dataType string, items int, items_per_workers
 	if items == -1 || items > dataSize {
 		items = dataSize
 	}
+	if workers == -1 {
+		workers = getWorkers(items)
+	}
+	fmt.Println("Working with ", workers, " workers")
 	if items_per_workers == -1 {
 		items_per_workers = int(math.Ceil(float64(items) / float64(workers)))
 	}
@@ -287,6 +290,16 @@ func openFile(csvFileName string) ([][]string, error) {
 	}
 
 	return csvLines, nil
+}
+
+func getWorkers(items int) int {
+	workers := math.Cbrt(float64(items))
+
+	if workers > 8 {
+		workers = 8
+	}
+
+	return int(workers)
 }
 
 func getPokemons(dataType string, items int, items_per_worker int, csvLines [][]string, pokemonChannel chan<- model.Pokemon) {

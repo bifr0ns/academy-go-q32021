@@ -82,7 +82,7 @@ func (mock *MockRepository) SaveExternalPokemon(pokemon model.PokemonExternal, c
 	return result.(*model.Pokemon), args.Error(1)
 }
 
-func (mock *MockRepository) GetPokemons(dataType string, items int, items_per_workers int, csvFileName string) ([]model.Pokemon, error) {
+func (mock *MockRepository) GetPokemons(dataType string, items int, items_per_workers int, workers int, csvFileName string) ([]model.Pokemon, error) {
 	args := mock.Called()
 	result := args.Get(0)
 	return result.([]model.Pokemon), args.Error(1)
@@ -142,7 +142,7 @@ func TestGetPokemons(t *testing.T) {
 
 	testService := NewPokemonService(mockRepo)
 
-	result, _ := testService.GetPokemons("all", 2, 1)
+	result, _ := testService.GetPokemons("all", 2, 1, 2)
 
 	mockRepo.AssertExpectations(t)
 

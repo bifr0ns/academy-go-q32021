@@ -215,6 +215,7 @@ func TestGetPokemons(t *testing.T) {
 		dataType          string
 		items             int
 		items_per_workers int
+		workers           int
 	}{
 		{
 			name:              "Valid",
@@ -224,6 +225,7 @@ func TestGetPokemons(t *testing.T) {
 			dataType:          "all",
 			items:             2,
 			items_per_workers: 1,
+			workers:           2,
 		},
 		{
 			name:              "InvalidFile",
@@ -232,6 +234,7 @@ func TestGetPokemons(t *testing.T) {
 			dataType:          "all",
 			items:             3,
 			items_per_workers: 1,
+			workers:           2,
 		},
 	}
 	for _, tC := range testCases {
@@ -239,7 +242,7 @@ func TestGetPokemons(t *testing.T) {
 
 			repo := NewPokemonRepo()
 
-			resp, err := repo.GetPokemons(tC.dataType, tC.items, tC.items_per_workers, tC.fixture)
+			resp, err := repo.GetPokemons(tC.dataType, tC.items, tC.items_per_workers, tC.workers, tC.fixture)
 			returnedErr := err != nil
 
 			if tC.returnErr == false {

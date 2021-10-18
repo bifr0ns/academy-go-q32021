@@ -16,7 +16,7 @@ import (
 type pokemonService interface {
 	FindById(pokemonId string) (*model.Pokemon, error)
 	SaveFromExternal(externalPokemon model.PokemonExternal) (*model.Pokemon, error)
-	GetPokemons(dataType string, items int, items_per_workers int) ([]model.Pokemon, error)
+	GetPokemons(dataType string, items int, items_per_workers int, workers int) ([]model.Pokemon, error)
 }
 
 type pokemonClient interface {
@@ -110,17 +110,19 @@ func (pc *PokemonController) GetPokemonsByWorker(rw http.ResponseWriter, r *http
 	var types string
 	var items string
 	var items_per_workers string
+	var workers string
 
 	types = r.FormValue("type")
 	items = r.FormValue("items")
 	items_per_workers = r.FormValue("items_per_workers")
+	workers = r.FormValue("workers")
 
 	urlParams := r.URL.Query()
 
 	rw.Header().Add("Content-Type", "application/json")
 
 	for i := range urlParams {
-		if i != "type" && i != "items" && i != "items_per_workers" {
+		if i != "type" && i != "items" && i != "items_per_workers" && i != "workers" {
 			rw.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(rw).Encode(fmte.FormattedError{Message: common.InvalidParameters})
 			return
@@ -137,6 +139,10 @@ func (pc *PokemonController) GetPokemonsByWorker(rw http.ResponseWriter, r *http
 
 	if items_per_workers == "" {
 		items_per_workers = "-1"
+	}
+
+	if workers == "" {
+		workers = "-1"
 	}
 
 	dataType := strings.ToLower(types)
@@ -160,7 +166,19 @@ func (pc *PokemonController) GetPokemonsByWorker(rw http.ResponseWriter, r *http
 		return
 	}
 
-	pokemons, err := pc.service.GetPokemons(types, items_int, items_per_workers_int)
+	workers_int, err := strconv.Atoi(workers)
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(fmte.FormattedError{Message: common.InvalidParameters})
+		return
+	}
+	if workers_int > 8 {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(fmte.FormattedError{Message: common.InvalidWorkers})
+		return
+	}
+
+	pokemons, err := pc.service.GetPokemons(types, items_int, items_per_workers_int, workers_int)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rw).Encode(fmte.FormattedError{Message: err.Error()})

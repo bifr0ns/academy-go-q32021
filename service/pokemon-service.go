@@ -8,7 +8,7 @@ import (
 type pokemonRepository interface {
 	GetPokemon(pokemonId string, csvFileName string) (*model.Pokemon, error)
 	SaveExternalPokemon(pokemon model.PokemonExternal, csvFileName string) (*model.Pokemon, error)
-	GetPokemons(dataType string, items int, items_per_workers int, csvFileName string) ([]model.Pokemon, error)
+	GetPokemons(dataType string, items int, items_per_workers int, workers int, csvFileName string) ([]model.Pokemon, error)
 }
 
 //PokemonService cointains an interface of pokemon repository which contains two methods.
@@ -39,6 +39,6 @@ func (ps *PokemonService) SaveFromExternal(externalPokemon model.PokemonExternal
 
 //GetPokemons of type service recieves data based on a query to call a repository.
 //Will return the response of the repository, an array model of Pokemons and error if any.
-func (ps *PokemonService) GetPokemons(dataType string, items int, items_per_workers int) ([]model.Pokemon, error) {
-	return ps.repo.GetPokemons(dataType, items, items_per_workers, common.CsvPokemonName)
+func (ps *PokemonService) GetPokemons(dataType string, items int, items_per_workers int, workers int) ([]model.Pokemon, error) {
+	return ps.repo.GetPokemons(dataType, items, items_per_workers, workers, common.CsvPokemonName)
 }

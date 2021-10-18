@@ -84,6 +84,8 @@ var badRequestResponse = "{\"message\":\"invalid parameters\"}\n"
 
 var pokemonsJsonResponse = "[{\"id\":155,\"name\":\"Cyndaquil\",\"type_1\":\"Fire\",\"type_2\":\"\",\"total_points\":309,\"hp\":39,\"attack\":52,\"defense\":43,\"speed_attack\":60,\"speed_defense\":50,\"speed\":65,\"generation\":2,\"legendary\":\"False\"},{\"id\":888,\"name\":\"Zacian-Hero\",\"type_1\":\"Fairy\",\"type_2\":\"\",\"total_points\":670,\"hp\":92,\"attack\":130,\"defense\":115,\"speed_attack\":80,\"speed_defense\":115,\"speed\":138,\"generation\":8,\"legendary\":\"False\"}]\n"
 
+var badNumbersOfWorkersResponse = "{\"message\":\"cannot have more than 8 workers\"}\n"
+
 type MockService struct {
 	mock.Mock
 }
@@ -110,7 +112,7 @@ func (mock *MockClient) GetExternalPokemon(uri string, id string) model.PokemonE
 	return result.(model.PokemonExternal)
 }
 
-func (mock *MockService) GetPokemons(dataType string, items int, items_per_workers int) ([]model.Pokemon, error) {
+func (mock *MockService) GetPokemons(dataType string, items int, items_per_workers int, workers int) ([]model.Pokemon, error) {
 	args := mock.Called()
 	result := args.Get(0)
 	return result.([]model.Pokemon), args.Error(1)
@@ -293,6 +295,15 @@ func TestGetPokemonsByWorker(t *testing.T) {
 			returnErr: errors.New(common.InvalidParameters),
 			status:    400,
 			response:  badRequestResponse,
+			returned:  pokemonsByWorker,
+		},
+		{
+			name:      "Invalid workers",
+			uri:       "/pokemons",
+			query:     "?workers=10",
+			returnErr: errors.New(common.InvalidWorkers),
+			status:    400,
+			response:  badNumbersOfWorkersResponse,
 			returned:  pokemonsByWorker,
 		},
 	}
