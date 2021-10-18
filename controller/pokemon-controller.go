@@ -111,10 +111,21 @@ func (pc *PokemonController) GetPokemonsByWorker(rw http.ResponseWriter, r *http
 	var items string
 	var items_per_workers string
 
-	vars := r.URL.Query()
-	types = vars.Get("type")
-	items = vars.Get("items")
-	items_per_workers = vars.Get("items_per_workers")
+	types = r.FormValue("type")
+	items = r.FormValue("items")
+	items_per_workers = r.FormValue("items_per_workers")
+
+	urlParams := r.URL.Query()
+
+	rw.Header().Add("Content-Type", "application/json")
+
+	for i := range urlParams {
+		if i != "type" && i != "items" && i != "items_per_workers" {
+			rw.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(rw).Encode(fmte.FormattedError{Message: common.InvalidParameters})
+			return
+		}
+	}
 
 	if types == "" {
 		types = "all"
@@ -127,8 +138,6 @@ func (pc *PokemonController) GetPokemonsByWorker(rw http.ResponseWriter, r *http
 	if items_per_workers == "" {
 		items_per_workers = "-1"
 	}
-
-	rw.Header().Add("Content-Type", "application/json")
 
 	dataType := strings.ToLower(types)
 	if dataType != "odd" && dataType != "even" && dataType != "all" {

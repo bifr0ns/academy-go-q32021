@@ -31,18 +31,6 @@ func (*muxRouter) GET(uri string, f func(w http.ResponseWriter, r *http.Request)
 	muxDispatcher.HandleFunc(uri, f).Methods("GET")
 }
 
-//GET of type muxRouter is expected to recieve a uri and a function with ResponseWrite and Request.
-//Registers a new route with a matcher for the URL path.
-func (*muxRouter) GETWITHQUERY(uri string, f func(w http.ResponseWriter, r *http.Request)) {
-	muxDispatcher.HandleFunc(uri, f).Methods("GET")
-	muxDispatcher.HandleFunc(uri, f).Queries("type", "{type}", "items", "{items}", "items_per_workers", "{items_per_workers}").Methods("GET")
-	muxDispatcher.HandleFunc(uri, f).Queries("items", "{items}", "items_per_workers", "{items_per_workers}").Methods("GET")
-	muxDispatcher.HandleFunc(uri, f).Queries("items_per_workers", "{items_per_workers}").Methods("GET")
-	muxDispatcher.HandleFunc(uri, f).Queries("type", "{type}", "items", "{items}").Methods("GET")
-	muxDispatcher.HandleFunc(uri, f).Queries("type", "{type}").Methods("GET")
-	muxDispatcher.HandleFunc(uri, f).Queries("type", "{type}", "items_per_workers", "{items_per_workers}").Methods("GET")
-}
-
 //POST of type muxRouter is expected to recieve a uri and a function with ResponseWrite and Request.
 //Registers a new route with a matcher for the URL path.
 func (*muxRouter) POST(uri string, f func(w http.ResponseWriter, r *http.Request)) {

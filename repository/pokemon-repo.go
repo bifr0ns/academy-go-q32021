@@ -337,15 +337,15 @@ func getPokemons(dataType string, items int, items_per_worker int, csvLines [][]
 		}
 
 		if pokemonsAdded == items {
-			fmt.Println("=======CLOSING CHANNEL ITEMS")
+			fmt.Println("=======CLOSING WORKER ITEMS")
 			wg.Done()
 			return
 		} else if pokemonsAdded == items_per_worker {
-			fmt.Println("=======CLOSING CHANNEL PER WORKER")
+			fmt.Println("=======CLOSING WORKER PER WORKER")
 			wg.Done()
 			return
 		}
 	}
-	fmt.Println("=======CLOSING CHANNEL EOF")
+	fmt.Println("=======CLOSING WORKER EOF")
 	wg.Done()
 }
