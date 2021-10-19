@@ -18,7 +18,7 @@ We need to go into the root of the project and run
 
 ### Run the project using a Docker image
 
-_Note: The image right now has the version of the previous PR #1 (Second Deliverable) and I will wait for PR #2 to merge to build a push the new one._
+_Note: The image right now has the version of the previous PR #1 (Second Deliverable) and I will wait for PR #2 to merge to build and push the new one._
 
     docker run --rm -p 8080:8000 bifr0ns/academy-go-q32021
 
@@ -38,9 +38,9 @@ or
 
 ## Functionality
 
-The project contains two endpoints as of now (GET) _/pokemons/{pokemon_id}_ , (POST) _/api/pokemons/{pokemon_id}_ and _/pokemons?type={type}&items_per_workers={items_per_workers}&items={items}_
+The project contains three endpoints as of now (GET) _/pokemons/{pokemon_id}_ , (POST) _/api/pokemons/{pokemon_id}_ and (GET) _/pokemons?type={type}&items_per_workers={items_per_workers}&items={items}&workers={workers}_
 
-The first endpoint will let us get a pokemon from our CSV file. And the second endpoint will get a pokemon from an external API ([PokeAPI](https://pokeapi.co/)) and if the pokemon does not exists in our CSV it will save it. The third endpoint will get us an array of pokemons, based on our query parameters (items, type, items_per_workers) all of them optional.
+The first endpoint will let us get a pokemon from our CSV file. And the second endpoint will get a pokemon from an external API ([PokeAPI](https://pokeapi.co/)) and if the pokemon does not exists in our CSV it will save it. The third endpoint will get us an array of pokemons, based on our query parameters (items, type, items_per_workers, workers) all of them optional.
 
 We can hit the first endpoint with the following link http://localhost:8000/pokemons/155, the second with http://localhost:8000/api/pokemons/888 and the third with http://localhost:8000/pokemons?type=even&items_per_workers=10&items=21
 
@@ -87,7 +87,7 @@ Example when pinging the second link
 ### Query pokemons
 
 Example when pinging the third link. All of the parameters are optional.
-Type can be _all/even/odd_
+Type can be _all/even/odd_. Workers limit is 8.
 
     [
         {
