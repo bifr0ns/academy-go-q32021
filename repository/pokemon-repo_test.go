@@ -42,6 +42,36 @@ var pokemonFromExternal = model.Pokemon{
 	Generation:   8,
 	Legendary:    "False",
 }
+var pokemon1 = model.Pokemon{
+	Id:           1,
+	Name:         "Bulbasaur",
+	Type1:        "Grass",
+	Type2:        "Poison",
+	Total:        318,
+	HP:           45,
+	Attack:       49,
+	Defense:      49,
+	SpeedAttack:  65,
+	SpeedDefense: 65,
+	Speed:        45,
+	Generation:   1,
+	Legendary:    "False",
+}
+var pokemon2 = model.Pokemon{
+	Id:           2,
+	Name:         "Ivysaur",
+	Type1:        "Grass",
+	Type2:        "Poison",
+	Total:        405,
+	HP:           60,
+	Attack:       62,
+	Defense:      63,
+	SpeedAttack:  80,
+	SpeedDefense: 80,
+	Speed:        60,
+	Generation:   1,
+	Legendary:    "False",
+}
 
 var externalPokemon = model.PokemonExternal{
 	Id:           888,
@@ -168,5 +198,60 @@ func teardown() {
 		fmt.Println("Error creating", common.CsvPokemonName_Test)
 		fmt.Println(err)
 		return
+	}
+}
+
+func TestGetPokemons(t *testing.T) {
+	var pokemonsByWorker []model.Pokemon
+
+	pokemonsByWorker = append(pokemonsByWorker, pokemon1)
+	pokemonsByWorker = append(pokemonsByWorker, pokemon2)
+
+	testCases := []struct {
+		name              string
+		fixture           string
+		returnErr         bool
+		response          []model.Pokemon
+		dataType          string
+		items             int
+		items_per_workers int
+		workers           int
+	}{
+		{
+			name:              "Valid",
+			fixture:           common.CsvPokemonName_Test,
+			returnErr:         false,
+			response:          pokemonsByWorker,
+			dataType:          "all",
+			items:             2,
+			items_per_workers: 1,
+			workers:           2,
+		},
+		{
+			name:              "InvalidFile",
+			fixture:           common.CsvPokemonName,
+			returnErr:         true,
+			dataType:          "all",
+			items:             3,
+			items_per_workers: 1,
+			workers:           2,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+
+			repo := NewPokemonRepo()
+
+			resp, err := repo.GetPokemons(tC.dataType, tC.items, tC.items_per_workers, tC.workers, tC.fixture)
+			returnedErr := err != nil
+
+			if tC.returnErr == false {
+				assert.ObjectsAreEqual(tC.response, resp)
+			}
+
+			if returnedErr != tC.returnErr {
+				t.Fatalf("Expected returnErr: %v, got: %v with %v", tC.returnErr, returnedErr, err)
+			}
+		})
 	}
 }

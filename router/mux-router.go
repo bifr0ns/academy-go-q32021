@@ -43,5 +43,5 @@ func (*muxRouter) SERVE(port string) {
 	fmt.Printf("Mux HTTP server running on port %v\n", port)
 	muxDispatcher.NotFoundHandler = http.HandlerFunc(error.NotFoundHandler)
 
-	log.Fatal(http.ListenAndServe(port, muxDispatcher))
+	log.Fatal(http.ListenAndServe(":"+port, muxDispatcher))
 }

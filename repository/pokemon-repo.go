@@ -4,9 +4,11 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/bifr0ns/academy-go-q32021/common"
 	"github.com/bifr0ns/academy-go-q32021/model"
@@ -196,4 +198,167 @@ func createPokemon(pokemon []string) model.Pokemon {
 	}
 
 	return pokemonCreated
+}
+
+var wg sync.WaitGroup
+
+//GetPokemonsof type PokemonRepo recieves data based on a query
+//Opens the csv file
+//Based on workers and go routines will find pokemons filtered by the query, will return them
+func (pr *PokemonRepo) GetPokemons(dataType string, items int, items_per_workers int, workers int, csvFileName string) ([]model.Pokemon, error) {
+	var pokemons []model.Pokemon
+
+	csvLines, err := openFile(csvFileName)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	dataSize := len(csvLines) - 1
+	isAll := 1
+
+	if dataType != "all" {
+		isAll = 2
+	}
+	if items == -1 || items > dataSize {
+		items = dataSize
+	}
+	if workers == -1 {
+		workers = getWorkers(items)
+	}
+	fmt.Println("Working with ", workers, " workers")
+	if items_per_workers == -1 {
+		items_per_workers = int(math.Ceil(float64(items) / float64(workers)))
+	}
+
+	begin := 1
+	tail := items_per_workers + 1
+	if isAll == 2 && tail*isAll+1 < dataSize {
+		tail = tail*isAll - 1
+	}
+	helper := tail - 1
+
+	pokemonChannel := make(chan model.Pokemon, 300)
+
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		if i == workers-1 && isAll == 1 {
+			tail = items + 1
+		}
+		if tail > dataSize+1 {
+			tail = items + 1
+		}
+		go getPokemons(dataType, items, items_per_workers, csvLines[begin:tail], pokemonChannel)
+		begin = tail
+		tail = tail + helper
+	}
+
+	wg.Add(1)
+
+	go func(pokemonChannel <-chan model.Pokemon) {
+		for poke := range pokemonChannel {
+			pokemons = append(pokemons, poke)
+			if len(pokemons) == items {
+				break
+			} else if len(pokemons) == items_per_workers*workers {
+				break
+			} else if len(pokemons) >= items/isAll && items == dataSize {
+				break
+			}
+		}
+		fmt.Println("Closing reader routine")
+		wg.Done()
+	}(pokemonChannel)
+
+	wg.Wait()
+	close(pokemonChannel)
+
+	return pokemons, nil
+}
+
+func openFile(csvFileName string) ([][]string, error) {
+	csvFile, err := os.Open(csvFileName)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("Successfully Opened CSV file")
+	defer csvFile.Close()
+
+	csvLines, err := csv.NewReader(csvFile).ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	return csvLines, nil
+}
+
+func getWorkers(items int) int {
+	workers := math.Cbrt(float64(items))
+
+	if workers > 8 {
+		workers = 8
+	}
+
+	return int(workers)
+}
+
+func getPokemons(dataType string, items int, items_per_worker int, csvLines [][]string, pokemonChannel chan<- model.Pokemon) {
+
+	pokemonsAdded := 0
+
+	for _, line := range csvLines {
+		id, _ := strconv.Atoi(line[0])
+		total, _ := strconv.Atoi(line[4])
+		hp, _ := strconv.Atoi(line[5])
+		attack, _ := strconv.Atoi(line[6])
+		defense, _ := strconv.Atoi(line[7])
+		speedAttack, _ := strconv.Atoi(line[8])
+		speedDefense, _ := strconv.Atoi(line[9])
+		speed, _ := strconv.Atoi(line[10])
+		generation, _ := strconv.Atoi(line[11])
+
+		pokemon := model.Pokemon{
+			Id:           id,
+			Name:         line[1],
+			Type1:        line[2],
+			Type2:        line[3],
+			Total:        total,
+			HP:           hp,
+			Attack:       attack,
+			Defense:      defense,
+			SpeedAttack:  speedAttack,
+			SpeedDefense: speedDefense,
+			Speed:        speed,
+			Generation:   generation,
+			Legendary:    line[12],
+		}
+
+		switch {
+		case dataType == "odd":
+			if id%2 != 0 {
+				pokemonChannel <- pokemon
+				pokemonsAdded++
+			}
+		case dataType == "even":
+			if id%2 == 0 {
+				pokemonChannel <- pokemon
+				pokemonsAdded++
+			}
+		default:
+			pokemonChannel <- pokemon
+			pokemonsAdded++
+		}
+
+		if pokemonsAdded == items {
+			fmt.Println("=======CLOSING WORKER ITEMS")
+			wg.Done()
+			return
+		} else if pokemonsAdded == items_per_worker {
+			fmt.Println("=======CLOSING WORKER PER WORKER")
+			wg.Done()
+			return
+		}
+	}
+	fmt.Println("=======CLOSING WORKER EOF")
+	wg.Done()
 }
